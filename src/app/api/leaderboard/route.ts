@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
@@ -54,8 +54,25 @@ async function fetchAndParseLeaderboard(): Promise<Kol[]> {
   return kols;
 }
 
-export async function GET() {
+const rateLimitStore: Map<string, { count: number; timestamp: number }> = new Map();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_COUNT = 10;
+
+export async function GET(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
   const now = Date.now();
+
+  const record = rateLimitStore.get(ip);
+
+  if (record && now - record.timestamp < RATE_LIMIT_WINDOW) {
+    if (record.count >= RATE_LIMIT_COUNT) {
+      return new NextResponse('Too many requests', { status: 429 });
+    }
+    rateLimitStore.set(ip, { count: record.count + 1, timestamp: record.timestamp });
+  } else {
+    rateLimitStore.set(ip, { count: 1, timestamp: now });
+  }
+
   if (cache.data && now - cache.timestamp < CACHE_DURATION) {
     return NextResponse.json(cache.data);
   }
