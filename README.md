@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kolscan Export
+
+This project is a web application that displays a leaderboard of Key Opinion Leaders (KOLs) from [kolscan.io](https://kolscan.io). It is built with Next.js and TypeScript, and is designed for deployment on Vercel.
+
+## Features
+
+- Fetches and displays KOL leaderboard data.
+- Caches data to minimize external API calls.
+- Professional project structure and setup.
+
+## Tech Stack
+
+- [Next.js](https://nextjs.org/)
+- [React](https://reactjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Axios](https://axios-http.com/) for data fetching
+- [Cheerio](https://cheerio.js.org/) for web scraping
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js (v20 or later)
+- npm, yarn, or pnpm
+
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/jskoiz/kolscan-export.git
+    cd kolscan-export
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+### Running the Development Server
+
+To run the app in development mode, execute the following command:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This application is optimized for deployment on the [Vercel Platform](https://vercel.com/).
 
-## Learn More
+To deploy, connect your GitHub repository to Vercel and follow the on-screen instructions. Vercel will automatically detect the Next.js framework and configure the build settings.
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+-   `src/app/api/leaderboard/route.ts`: API route for fetching and caching leaderboard data.
+-   `src/app/page.tsx`: The main page component that displays the leaderboard.
+-   `src/app/layout.tsx`: The main layout for the application.
+-   `public/`: Static assets.
+-   `next.config.ts`: Next.js configuration.
+-   `tailwind.config.ts`: Tailwind CSS configuration.
