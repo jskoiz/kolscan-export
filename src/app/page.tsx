@@ -52,6 +52,34 @@ export default function Home() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (selectedKols.size === 0) {
+      setExportedJson('');
+      return;
+    }
+
+    const emojis = [
+      '🐋', '🦑', '🐙', '🐬', '🐠', '🐡', '🦈', '🦀', '🦞', '🦐', '🐳', '🐟',
+      '🐢', '🐸', '🐍', '🦎', '🐊', '🐅', '🐆', '🦓', '🦍', '🐘', '🦏', '🐪',
+      '🦒', '🦘', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🐐', '🦌', '🐕',
+      '🐩', '🐈', '🐓', '🦃', '🕊', '🦅', '🦆', '🦉', '🦇', '🐺', '🐗', '🐴',
+      '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦗', '🕷', '🦂', '🦟', '🦠'
+    ];
+    for (let i = emojis.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [emojis[i], emojis[j]] = [emojis[j], emojis[i]];
+    }
+
+    const walletsToExport: ExportWallet[] = leaderboardData
+      .filter(kol => selectedKols.has(kol.address))
+      .map((kol, index) => ({
+        address: kol.address,
+        name: kol.name,
+        emoji: emojis[index % emojis.length],
+      }));
+    setExportedJson(JSON.stringify(walletsToExport, null, 2));
+  }, [selectedKols, leaderboardData]);
+
   const handleCheckboxChange = (address: string) => {
     const newSelectedKols = new Set(selectedKols);
     if (newSelectedKols.has(address)) {
@@ -70,25 +98,6 @@ export default function Home() {
       setSelectedKols(allAddresses);
     }
   };
-
-  const handleExport = () => {
-    const emojis = ['🐋', '🦑', '🐙', '🐬', '🐠', '🐡', '🦈', '🦀', '🦞', '🦐', '🐳', '🐟', '🦐', '🦑', '🦀', '🦞', '🐙', '🐬', '🐠', '🐡', '🦈'];
-
-    // Fisher-Yates shuffle
-    for (let i = emojis.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [emojis[i], emojis[j]] = [emojis[j], emojis[i]];
-    }
-
-    const walletsToExport: ExportWallet[] = leaderboardData
-      .filter(kol => selectedKols.has(kol.address))
-      .map((kol, index) => ({
-        address: kol.address,
-        name: kol.name,
-        emoji: emojis[index % emojis.length],
-      }));
-    setExportedJson(JSON.stringify(walletsToExport, null, 2));
-  };
   
   const handleCopy = () => {
     if (exportedJson) {
@@ -100,98 +109,101 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start p-4 sm:p-12 md:p-24 bg-gray-900 text-gray-200 font-sans">
-      <div className="w-full max-w-4xl">
-        <h1 className="text-4xl font-bold mb-2">KOLScan Exporter</h1>
-        <p className="text-gray-400 mb-8">Select KOLs from the leaderboard to export for bulk import.</p>
+    <main className="flex min-h-screen flex-col items-center justify-start p-4 sm:p-8 md:p-12 bg-gray-900 text-gray-100">
+      <div className="w-full max-w-7xl mx-auto">
+        <header className="text-center mb-12">
+          <h1 className="text-5xl font-bold mb-2 text-white">kolscan.io Exporter</h1>
+          <p className="text-gray-400 text-lg">Select KOLs from the leaderboard to export for bulk import.</p>
+        </header>
 
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-          <div className="flex justify-between items-center border-b border-gray-600 pb-2 mb-3">
-            <h2 className="text-lg font-semibold">Leaderboard ({leaderboardData.length} KOLs)</h2>
-            <button
-                onClick={handleSelectAll}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium"
-            >
-              {selectedKols.size === leaderboardData.length ? 'Deselect All' : 'Select All'}
-            </button>
-          </div>
-
-          {isLoading ? (
-            <div className="text-center p-8">Loading Leaderboard...</div>
-          ) : error ? (
-            <div className="text-center p-8 text-red-500">Error: {error}</div>
-          ) : (
-            <div className="max-h-96 overflow-y-auto pr-2">
-              {leaderboardData.map((kol, index) => (
-                <div key={kol.address} className="flex items-center space-x-4 p-3 my-2 hover:bg-gray-700 rounded-lg transition-colors">
-                  <input
-                    type="checkbox"
-                    id={`kol-${index}`}
-                    checked={selectedKols.has(kol.address)}
-                    onChange={() => handleCheckboxChange(kol.address)}
-                    className="h-5 w-5 rounded bg-gray-600 border-gray-500 text-indigo-500 focus:ring-indigo-600 self-start mt-3"
-                  />
-                  {kol.pfpUrl && (
-                    <Image
-                      src={kol.pfpUrl}
-                      alt={`${kol.name}'s profile picture`}
-                      width={48}
-                      height={48}
-                      className="rounded-full"
-                    />
-                  )}
-                  <div className="flex-grow flex justify-between items-start">
-                    <div className="flex-grow">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-bold text-lg">{kol.name}</span>
-                        {kol.twitterUrl && (
-                          <a href={kol.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 group">
-                            <XIcon />
-                          </a>
-                        )}
-                      </div>
-                      <div className="text-sm text-gray-400 font-mono mt-1">{kol.address}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-green-400 text-lg">{kol.realizedPnl} Sol</div>
-                      <div className="text-sm text-gray-400">(${kol.realizedPnlUsd})</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="mt-6 flex justify-center">
-          <button
-            onClick={handleExport}
-            className="w-full sm:w-auto px-8 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-500"
-            disabled={selectedKols.size === 0}
-          >
-            Export {selectedKols.size} Selected KOLs
-          </button>
-        </div>
-
-        {exportedJson && (
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-2">Exported Data</h2>
-            <div className="relative">
-              <textarea
-                readOnly
-                value={exportedJson}
-                className="w-full h-80 p-4 font-mono text-sm bg-black border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
-                placeholder="Exported JSON will appear here..."
-              />
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="w-full lg:w-3/5 bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6">
+            <div className="flex justify-between items-center border-b border-gray-700 pb-4 mb-4">
+              <h2 className="text-2xl font-semibold text-white">Leaderboard ({leaderboardData.length} KOLs)</h2>
               <button
-                onClick={handleCopy}
-                className="absolute top-3 right-3 px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-md text-xs font-medium"
+                  onClick={handleSelectAll}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {copyButtonText}
+                {selectedKols.size === leaderboardData.length ? 'Deselect All' : 'Select All'}
               </button>
             </div>
+
+            {isLoading ? (
+              <div className="text-center p-8 text-gray-400">Loading Leaderboard...</div>
+            ) : error ? (
+              <div className="text-center p-8 text-red-500">Error: {error}</div>
+            ) : (
+              <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                {leaderboardData.map((kol, index) => (
+                  <div key={kol.address} className="flex items-center space-x-4 p-3 my-2 bg-gray-800 hover:bg-gray-700/50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-blue-500" onClick={() => handleCheckboxChange(kol.address)}>
+                    <input
+                      type="checkbox"
+                      id={`kol-${index}`}
+                      checked={selectedKols.has(kol.address)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleCheckboxChange(kol.address);
+                      }}
+                      className="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-500 self-start mt-3"
+                    />
+                    {kol.pfpUrl ? (
+                      <Image
+                        src={kol.pfpUrl}
+                        alt={`${kol.name}'s profile picture`}
+                        width={48}
+                        height={48}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
+                        <span className="text-xl">🏆</span>
+                      </div>
+                    )}
+                    <div className="flex-grow flex justify-between items-start">
+                      <div className="flex-grow">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-lg text-white">{kol.name}</span>
+                          {kol.twitterUrl && (
+                            <a href={kol.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 group">
+                              <XIcon />
+                            </a>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-400 font-mono mt-1 break-all">{kol.address}</div>
+                      </div>
+                      <div className="text-right pl-4">
+                        <div className="font-semibold text-green-400 text-lg whitespace-nowrap">{kol.realizedPnl} Sol</div>
+                        <div className="text-sm text-gray-400 whitespace-nowrap">(${kol.realizedPnlUsd})</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          <div className="w-full lg:w-2/5">
+            <div className="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6 sticky top-8 flex flex-col h-full">
+              <h2 className="text-2xl font-semibold mb-4 text-white">Exported Data</h2>
+              <div className="relative flex-grow">
+                <textarea
+                  readOnly
+                  value={exportedJson}
+                  className="w-full h-full p-4 font-mono text-sm bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-300 custom-scrollbar"
+                  placeholder="Select KOLs from the leaderboard to see the export data here..."
+                />
+                {exportedJson && (
+                  <button
+                    onClick={handleCopy}
+                    className="absolute top-3 right-3 px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-md text-xs font-medium text-white transition-colors"
+                  >
+                    {copyButtonText}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );
