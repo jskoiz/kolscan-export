@@ -8,8 +8,8 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Kolscan Export",
-  description: "A web application to display KOL leaderboard data from kolscan.io.",
+  title: "kolscan-export",
+  description: "kolscan leaderboard export",
 };
 
 export default function RootLayout({
